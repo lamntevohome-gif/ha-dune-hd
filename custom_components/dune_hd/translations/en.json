@@ -1,0 +1,39 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dune HD",
+        "description": "Enter the IP address of the Dune HD player (see Setup > Information). Port is 80, or 11080 for Google-certified ATV models.",
+        "data": {
+          "host": "Host / IP address",
+          "port": "Port",
+          "name": "Name"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the player. Check the IP address, port and that the player is on the network.",
+      "invalid_response": "The device answered, but not like a Dune HD IP Control endpoint.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This player is already configured"
+    }
+  },
+  "services": {
+    "open_path": {
+      "name": "Open path",
+      "description": "Open a folder, menu section or item in the player GUI (protocol 4+).",
+      "fields": {
+        "url": {
+          "name": "URL",
+          "description": "e.g. root://applications, root://setup, root://sources/USB%20Storage"
+        }
+      }
+    },
+    "black_screen": {
+      "name": "Black screen",
+      "description": "Stop playback and switch the player to black screen state."
+    }
+  }
+}

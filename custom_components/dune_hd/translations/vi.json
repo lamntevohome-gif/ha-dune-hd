@@ -1,0 +1,39 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dune HD",
+        "description": "Nhập địa chỉ IP của đầu Dune HD (xem trong Setup > Information). Cổng là 80, riêng các mẫu ATV chứng nhận Google dùng 11080.",
+        "data": {
+          "host": "Địa chỉ IP",
+          "port": "Cổng",
+          "name": "Tên"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Không kết nối được đầu phát. Kiểm tra IP, cổng và kết nối mạng.",
+      "invalid_response": "Thiết bị có phản hồi nhưng không phải IP Control của Dune HD.",
+      "unknown": "Lỗi không xác định"
+    },
+    "abort": {
+      "already_configured": "Đầu phát này đã được thêm rồi"
+    }
+  },
+  "services": {
+    "open_path": {
+      "name": "Mở đường dẫn",
+      "description": "Mở thư mục, mục menu hoặc ứng dụng trên giao diện đầu phát (protocol 4+).",
+      "fields": {
+        "url": {
+          "name": "URL",
+          "description": "Ví dụ: root://applications, root://setup, root://sources/USB%20Storage"
+        }
+      }
+    },
+    "black_screen": {
+      "name": "Màn hình đen",
+      "description": "Dừng phát và chuyển đầu phát sang trạng thái màn hình đen."
+    }
+  }
+}

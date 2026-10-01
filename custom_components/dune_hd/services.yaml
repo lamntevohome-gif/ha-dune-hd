@@ -1,0 +1,16 @@
+open_path:
+  target:
+    entity:
+      integration: dune_hd
+      domain: media_player
+  fields:
+    url:
+      required: true
+      example: "root://applications"
+      selector:
+        text:
+black_screen:
+  target:
+    entity:
+      integration: dune_hd
+      domain: media_player
