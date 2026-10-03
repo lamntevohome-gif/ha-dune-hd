@@ -55,9 +55,3 @@ API_PLAYBACK_ACTIONS: Final = frozenset({"stop", "prev", "next"})
 SERVICE_OPEN_PATH: Final = "open_path"
 SERVICE_BLACK_SCREEN: Final = "black_screen"
 ATTR_URL: Final = "url"
-
-# Media browser: mirror of the Dune on-screen menu (ui_state, protocol 5+)
-PROTOCOL_UI_STATE: Final = 5
-UI_CONTENT_TYPE: Final = "dune_ui"
-UI_PREFIX: Final = "dune_ui://"
-BROWSE_ROOT_ID: Final = "dune_root"
