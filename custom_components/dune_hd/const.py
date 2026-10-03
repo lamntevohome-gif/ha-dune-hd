@@ -55,3 +55,44 @@ API_PLAYBACK_ACTIONS: Final = frozenset({"stop", "prev", "next"})
 SERVICE_OPEN_PATH: Final = "open_path"
 SERVICE_BLACK_SCREEN: Final = "black_screen"
 ATTR_URL: Final = "url"
+
+# Commands handled with state-aware API calls instead of IR codes
+API_SMART_COMMANDS: Final = frozenset(
+    {"play_pause", "play", "pause", "rewind", "fast_forward", "power_toggle", "power_on", "power_off"}
+)
+SEEK_STEP_SECONDS: Final = 10
+
+# Key names sent by other remotes / cards (Android TV keycodes, Universal Remote Card…)
+# -> Dune HD command names. Matching is case-insensitive, "KEYCODE_" prefix is ignored.
+KEY_ALIASES: Final[dict[str, str]] = {
+    "dpad_up": "up",
+    "dpad_down": "down",
+    "dpad_left": "left",
+    "dpad_right": "right",
+    "dpad_center": "enter",
+    "center": "enter",
+    "select": "enter",
+    "ok": "enter",
+    "back": "return",
+    "home": "main_screen",
+    "menu": "popup_menu",
+    "settings": "popup_menu",
+    "guide": "top_menu",
+    "info": "popup_menu",
+    "volume_up": "volume_up",
+    "volume_down": "volume_down",
+    "volume_mute": "mute",
+    "mute": "mute",
+    "power": "power_toggle",
+    "sleep": "power_off",
+    "wakeup": "power_on",
+    "media_play_pause": "play_pause",
+    "media_play": "play",
+    "media_pause": "pause",
+    "media_stop": "stop",
+    "media_next": "next",
+    "media_previous": "prev",
+    "media_rewind": "rewind",
+    "media_fast_forward": "fast_forward",
+    "media_audio_track": "audio",
+}
