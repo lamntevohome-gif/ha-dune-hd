@@ -58,6 +58,11 @@ Lệnh được chấp nhận trong `remote.send_command`:
   **đảo thứ tự byte**: `00 BF 18 E7` → `E718BF00`)
 - Lệnh trạng thái: `main_screen`, `black_screen`, `standby`
 - Điều khiển phát (protocol 5+): `stop`, `prev`, `next`
+- Phím kiểu Android TV (dùng được với Universal Remote Card, platform *Android TV*):
+  `DPAD_UP/DOWN/LEFT/RIGHT/CENTER`, `BACK`, `HOME`, `MENU`, `VOLUME_UP/DOWN/MUTE`,
+  `POWER`, `MEDIA_PLAY_PAUSE`, `MEDIA_PLAY`, `MEDIA_PAUSE`, `MEDIA_STOP`,
+  `MEDIA_NEXT`, `MEDIA_PREVIOUS`, `MEDIA_REWIND` / `MEDIA_FAST_FORWARD` (tua 10 giây)
+  — có hoặc không có tiền tố `KEYCODE_`
 
 ```yaml
 # Phát phim từ NAS (NFS)
