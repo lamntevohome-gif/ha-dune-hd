@@ -24,7 +24,7 @@ next/previous chỉ hiện khi đầu phát hỗ trợ protocol 5+.
 ## Cài đặt qua HACS (custom repository)
 
 1. Đẩy toàn bộ thư mục này lên một repo GitHub **public**, ví dụ `ha-dune-hd`.
-   Sửa `YOUR_GITHUB_USERNAME` trong `custom_components/dune_hd/manifest.json`.
+   Sửa `lamntevohome-gif` trong `custom_components/dune_hd/manifest.json`.
 2. Tạo một **Release** trên GitHub (ví dụ tag `v0.1.0`) để HACS hiển thị phiên bản.
 3. Trong Home Assistant: **HACS → ⋮ (góc phải) → Custom repositories**
    - Repository: `https://github.com/<user>/ha-dune-hd`
@@ -37,6 +37,19 @@ next/previous chỉ hiện khi đầu phát hỗ trợ protocol 5+.
 
 Cài thủ công không qua HACS: chép `custom_components/dune_hd` vào
 `/config/custom_components/` rồi khởi động lại.
+
+## Menu Dune HD trong Media browser (protocol 5+)
+
+Mở Media browser của entity Dune → **Menu Dune HD**: Home Assistant hiện đúng
+menu đang có trên TV (Ứng dụng, Nguồn phát, USB, Yêu thích…), kèm icon — giống
+app Dune HD trên điện thoại (dùng `ui_state`, `ui_action_enter`, `ui_action_return`).
+
+- **Bấm vào một mục** → đi vào mục đó (menu trên TV cũng chuyển theo).
+- **Bấm nút ▶ của một mục** → mở/phát mục đó trên Dune (mở app, phát phim…).
+- Mục **Media (Home Assistant)** vẫn giữ để phát file từ thư viện của HA.
+
+Lưu ý: duyệt menu sẽ làm menu trên TV di chuyển theo; nếu đang phát phim, mở
+"Menu Dune HD" sẽ đưa Dune về màn hình chính.
 
 ## Ví dụ sử dụng
 
