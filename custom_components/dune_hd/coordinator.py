@@ -10,6 +10,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import DuneHDClient, DuneHDConnectionError, DuneHDError
 from .const import SCAN_INTERVAL_SECONDS, STATE_UNREACHABLE
+from .ui_browser import DuneUINavigator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class DuneHDCoordinator(DataUpdateCoordinator[dict[str, str]]):
             update_interval=timedelta(seconds=SCAN_INTERVAL_SECONDS),
         )
         self.client = client
+        self.ui = DuneUINavigator(client)
         self.protocol_version = 0
         self.device_details: dict[str, str] = {}
 

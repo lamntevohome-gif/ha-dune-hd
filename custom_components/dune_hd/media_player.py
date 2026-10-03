@@ -7,7 +7,9 @@ import voluptuous as vol
 
 from homeassistant.components import media_source
 from homeassistant.components.media_player import (
+    BrowseError,
     BrowseMedia,
+    MediaClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -20,8 +22,10 @@ from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
+from .api import DuneHDError
 from .const import (
     ATTR_URL,
+    BROWSE_ROOT_ID,
     IR_CODES,
     OFF_PLAYER_STATES,
     PLAYBACK_PLAYER_STATES,
@@ -29,11 +33,15 @@ from .const import (
     PROTOCOL_LAUNCH_MEDIA_URL,
     PROTOCOL_OPEN_PATH,
     PROTOCOL_PLAYBACK_ACTION,
+    PROTOCOL_UI_STATE,
     SERVICE_BLACK_SCREEN,
     SERVICE_OPEN_PATH,
+    UI_CONTENT_TYPE,
+    UI_PREFIX,
 )
 from .coordinator import DuneHDConfigEntry, DuneHDCoordinator
 from .entity import DuneHDEntity
+from .ui_browser import decode_path, encode_path, is_navigator, screen_of
 
 BASE_FEATURES = (
     MediaPlayerEntityFeature.TURN_ON
@@ -217,7 +225,15 @@ class DuneHDMediaPlayer(DuneHDEntity, MediaPlayerEntity):
     async def async_play_media(
         self, media_type: MediaType | str, media_id: str, **kwargs: Any
     ) -> None:
-        """Play a URL (nfs://, smb://, http://, storage_name://...) or a media_source item."""
+        """Play a URL (nfs://, smb://, http://, storage_name://...), a media_source
+        item, or an item of the Dune on-screen menu (dune_ui://...)."""
+        if media_id.startswith(UI_PREFIX):
+            try:
+                await self.coordinator.ui.activate(decode_path(media_id))
+            except (DuneHDError, ValueError) as err:
+                raise HomeAssistantError(f"Dune HD: {err}") from err
+            await self.coordinator.async_request_refresh()
+            return
         if media_source.is_media_source_id(media_id):
             item = await media_source.async_resolve_media(
                 self.hass, media_id, self.entity_id
@@ -235,6 +251,10 @@ class DuneHDMediaPlayer(DuneHDEntity, MediaPlayerEntity):
         media_content_type: MediaType | str | None = None,
         media_content_id: str | None = None,
     ) -> BrowseMedia:
+        if media_content_id in (None, BROWSE_ROOT_ID):
+            return self._browse_root()
+        if media_content_id.startswith(UI_PREFIX):
+            return await self._browse_ui(decode_path(media_content_id))
         return await media_source.async_browse_media(
             self.hass,
             media_content_id,
@@ -242,6 +262,114 @@ class DuneHDMediaPlayer(DuneHDEntity, MediaPlayerEntity):
                 ("video/", "audio/", "image/")
             ),
         )
+
+    def _browse_root(self) -> BrowseMedia:
+        children: list[BrowseMedia] = []
+        if self.coordinator.protocol_version >= PROTOCOL_UI_STATE:
+            children.append(
+                BrowseMedia(
+                    media_class=MediaClass.DIRECTORY,
+                    media_content_id=UI_PREFIX,
+                    media_content_type=UI_CONTENT_TYPE,
+                    title="Menu Dune HD",
+                    can_play=False,
+                    can_expand=True,
+                )
+            )
+        children.append(
+            BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id="media-source://",
+                media_content_type="",
+                title="Media (Home Assistant)",
+                can_play=False,
+                can_expand=True,
+            )
+        )
+        return BrowseMedia(
+            media_class=MediaClass.DIRECTORY,
+            media_content_id=BROWSE_ROOT_ID,
+            media_content_type="",
+            title=self.coordinator.config_entry.title,
+            can_play=False,
+            can_expand=True,
+            children=children,
+            children_media_class=MediaClass.DIRECTORY,
+        )
+
+    async def _browse_ui(self, path: list[str]) -> BrowseMedia:
+        """Show the Dune menu screen at `path` (this also moves the TV menu)."""
+        try:
+            state = await self.coordinator.ui.show(path)
+        except DuneHDError as err:
+            raise BrowseError(f"Dune HD: {err}") from err
+
+        content_id = encode_path(path)
+        if not is_navigator(state):
+            # The item launched an app or started playback
+            await self.coordinator.async_request_refresh()
+            return BrowseMedia(
+                media_class=MediaClass.APP,
+                media_content_id=content_id,
+                media_content_type=UI_CONTENT_TYPE,
+                title="Đã mở trên Dune HD",
+                can_play=False,
+                can_expand=True,
+                children=[],
+            )
+
+        screen = screen_of(state)
+        children: list[BrowseMedia] = []
+        for item in screen.get("items") or []:
+            item_id = item.get("id")
+            if not item_id:
+                continue
+            child_id = encode_path([*path, item_id])
+            icon = item.get("icon")
+            children.append(
+                BrowseMedia(
+                    media_class=MediaClass.DIRECTORY,
+                    media_content_id=child_id,
+                    media_content_type=UI_CONTENT_TYPE,
+                    title=item.get("caption") or item_id,
+                    can_play=True,  # play button = open on the TV
+                    can_expand=True,  # click = browse into it
+                    thumbnail=(
+                        self.get_browse_image_url(UI_CONTENT_TYPE, child_id, icon)
+                        if icon
+                        else None
+                    ),
+                )
+            )
+
+        title = " / ".join(screen.get("navigator_path") or []) or "Menu Dune HD"
+        total = screen.get("items_total_count")
+        if isinstance(total, int) and total > len(children):
+            title += f" ({len(children)}/{total})"
+        return BrowseMedia(
+            media_class=MediaClass.DIRECTORY,
+            media_content_id=content_id,
+            media_content_type=UI_CONTENT_TYPE,
+            title=title,
+            can_play=False,
+            can_expand=True,
+            children=children,
+            children_media_class=MediaClass.DIRECTORY,
+        )
+
+    async def async_get_browse_image(
+        self,
+        media_content_type: MediaType | str,
+        media_content_id: str,
+        media_image_id: str | None = None,
+    ) -> tuple[bytes | None, str | None]:
+        """Serve Dune menu icons through Home Assistant."""
+        if not media_image_id:
+            return None, None
+        try:
+            return await self._client.get_file(media_image_id)
+        except DuneHDError:
+            return None, None
 
     # ---- Entity services -------------------------------------------------------
 
